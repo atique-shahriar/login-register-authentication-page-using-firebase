@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {createBrowserRouter, RouterProvider} from "react-router-dom";
 
 import Home from "./components/Home";
 import Login from "./components/Login";
@@ -14,11 +14,11 @@ const router = createBrowserRouter([
     element: <Root></Root>,
     children: [
       {
-        path: "/",
+        path: "/home",
         element: <Home></Home>,
       },
       {
-        path: "/login",
+        path: "/",
         element: <Login></Login>,
       },
       {
