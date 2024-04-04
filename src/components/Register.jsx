@@ -1,12 +1,13 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { auth } from "./firebase.config";
 
 const Register = () => {
   const [createUserError, setCreateUserError] = useState("");
+  const [createUserSuccess, setCreateUserSuccess] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -14,16 +15,27 @@ const Register = () => {
     const email = e.target.email.value;
     const password = e.target.password.value;
     const confirmPassword = e.target.confirmPassword.value;
-    console.log(createUserError);
-    setCreateUserError("");
-    console.log(createUserError);
     console.log(displayName, email, password, confirmPassword);
+    console.log(password.length);
+
+    setCreateUserError("");
+    setCreateUserSuccess("");
+
+    if (password.length < 6) {
+      setCreateUserError("Your password should be minimum 6 character.");
+      return;
+    } else if (!/[A-Z]/.test(password)) {
+      setCreateUserError("Password should contains minimum 1 uppercase, 1 lowercase, 1 number, 1 special character (! , @ $ %)");
+      return;
+    }
+
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
         console.log(result.user);
+        setCreateUserSuccess("User created successfully...");
       })
       .catch((error) => {
-        setCreateUserError(error.message);
+        setCreateUserError("Already added this email.");
       });
   };
 
@@ -41,31 +53,42 @@ const Register = () => {
             <label htmlFor="email" className="block mt-6">
               Email
             </label>
-            <input className="block px-5 py-2  border-b-2 w-full mt-2 " name="email" type="email" placeholder="Type email address" />
+            <input className="block px-5 py-2  border-b-2 w-full mt-2 " name="email" type="email" placeholder="Type email address" required />
 
             <label htmlFor="email" className="block mt-6">
               Password
             </label>
-            <input className="block px-5 py-2 border-b-2 w-full mt-2" name="password" type="password" placeholder="Type password" />
+            <div className="flex relative">
+              <input className="block px-5 py-2 border-b-2 w-full mt-2" name="password" type={showPassword ? "text" : "password"} placeholder="Type password" required />
+              <span onClick={() => setShowPassword(!showPassword)} className="hover:cursor-pointer absolute right-3 top-5 text-gray-500">
+                {showPassword ? <FaEye></FaEye> : <FaEyeSlash></FaEyeSlash>}
+              </span>
+            </div>
 
             <label htmlFor="email" className="block mt-6">
               Confirm Password
             </label>
-            <input className="block px-5 py-2 border-b-2 w-full mt-2" name="confirmPassword" type="password" placeholder="Type password again" />
+            <div className="flex relative">
+              <input className="block px-5 py-2 border-b-2 w-full mt-2" name="confirmPassword" type={showPassword ? "text" : "password"} placeholder="Type password again" required />
+              <span onClick={() => setShowPassword(!showPassword)} className="hover:cursor-pointer absolute right-3 top-5 text-gray-500">
+                {showPassword ? <FaEye></FaEye> : <FaEyeSlash></FaEyeSlash>}
+              </span>
+            </div>
 
             <div className="flex mt-4 justify-center">
               <input type="submit" value="REGISTER" className="bg-gradient-to-r from-[#ED765E] to-[#FEA858] w-3/4 py-2 rounded-xl font-bold text-white" />
             </div>
+            <div>{createUserError && <p className="mt-1 text-red-600 text-center">{createUserError}</p>}</div>
+            <div>{createUserSuccess && <p className="mt-1 text-green-600 text-center">{createUserSuccess}</p>}</div>
           </form>
           <div className="flex flex-col items-center justify-center  mt-6">
-            <p className="mt-4">
+            <p className="mt-2">
               Are have an account?{" "}
               <span className="text-sky-700">
                 <Link to="/">Login.</Link>
               </span>
             </p>
           </div>
-          <ToastContainer />
         </div>
       </div>
     </div>
