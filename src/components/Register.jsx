@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "firebase/auth";
 import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -11,12 +11,12 @@ const Register = () => {
 
   const handleRegister = (e) => {
     e.preventDefault();
-    const displayName = e.target.username.value;
+    const name = e.target.username.value;
     const email = e.target.email.value;
     const password = e.target.password.value;
     const confirmPassword = e.target.confirmPassword.value;
-    console.log(displayName, email, password, confirmPassword);
-    console.log(password.length);
+    const isChecked = e.target.termsConditions.checked;
+    console.log(name, email, password, confirmPassword, isChecked);
 
     setCreateUserError("");
     setCreateUserSuccess("");
@@ -27,15 +27,30 @@ const Register = () => {
     } else if (!/[A-Z]/.test(password)) {
       setCreateUserError("Password should contains minimum 1 uppercase, 1 lowercase, 1 number, 1 special character (! , @ $ %)");
       return;
+    } else if (!isChecked) {
+      setCreateUserError("Please accept our terms and conditions.");
+      return;
     }
 
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
         console.log(result.user);
-        setCreateUserSuccess("User created successfully...");
+        updateProfile(result.user, {displayName: name})
+          .then(() => {
+            console.log("Profile Update Successfully");
+          })
+          .catch((error) => {
+            console.log(error.message);
+          });
+
+        sendEmailVerification(result.user).then(() => {
+          alert("Please check email for verification");
+          setCreateUserSuccess("User created successfully...");
+        });
       })
       .catch((error) => {
         setCreateUserError("Already added this email.");
+        console.log(error.message);
       });
   };
 
@@ -73,6 +88,11 @@ const Register = () => {
               <span onClick={() => setShowPassword(!showPassword)} className="hover:cursor-pointer absolute right-3 top-5 text-gray-500">
                 {showPassword ? <FaEye></FaEye> : <FaEyeSlash></FaEyeSlash>}
               </span>
+            </div>
+
+            <div className="flex items-center gap-2 mt-2 font-semibold">
+              <input type="checkbox" name="termsConditions" id="" />
+              <label htmlFor="termsConditions">Accept our terms and conditions.</label>
             </div>
 
             <div className="flex mt-4 justify-center">
